@@ -10,3 +10,11 @@ data class CustomerDomain(
 ) {
     fun generateETag(): String = generateETag(this)
 }
+
+@Serializable
+data class CustomerCreationDomain(
+    val name: String,
+    val age: Int
+) {
+    fun generateETag(): String = generateETag(this)
+}

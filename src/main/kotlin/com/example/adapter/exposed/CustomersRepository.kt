@@ -1,6 +1,8 @@
 package com.example.adapter.exposed
 
+import com.example.domain.CustomerCreationDomain
 import com.example.domain.CustomerDomain
+import com.example.domain.PaginationFilters
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -19,15 +21,15 @@ class CustomersRepository() : BaseRepository() {
     override val table: Table
         get() = CustomersTable
 
-    suspend fun create(customerDomain: CustomerDomain): Int = query {
+    suspend fun create(customerCreationDomain: CustomerCreationDomain): Int = query {
         CustomersTable.insert {
-            it[id] = customerDomain.id
-            it[name] = name
+            it[name] = customerCreationDomain.name
+            it[age] = customerCreationDomain.age
         }[CustomersTable.id]
     }
 
-    suspend fun list(perPage: Int = 10, offset: Long = 1): List<CustomerDomain> = query {
-        CustomersTable.selectAll().limit(perPage, offset).map {
+    suspend fun list(paginationFilters: PaginationFilters): List<CustomerDomain> = query {
+        CustomersTable.selectAll().limit(paginationFilters.perPage, paginationFilters.page).map {
             CustomerDomain(
                 id = it[CustomersTable.id].toInt(),
                 name = it[CustomersTable.name],

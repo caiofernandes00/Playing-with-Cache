@@ -10,3 +10,11 @@ data class ProductDomain(
 ) {
     fun generateETag(): String = generateETag(this)
 }
+
+@Serializable
+data class ProductCreationDomain(
+    val name: String,
+    val price: Double
+) {
+    fun generateETag(): String = generateETag(this)
+}

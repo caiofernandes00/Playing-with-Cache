@@ -1,6 +1,6 @@
 from locust import HttpUser, task, between, constant, tag
 
-class MyUser(HttpUser):
+class Customer(HttpUser):
     wait_time = between(0.1, 1)
 
     @tag("create")
@@ -10,10 +10,11 @@ class MyUser(HttpUser):
             "Content-Type": "application/json"
         }
         payload = {
-            "name": "fake-name"
+            "name": "fake-name",
+            "age": 10,
         }
 
-        response = self.client.post("/orders", json=payload, headers=headers)
+        response = self.client.post("/customers", json=payload, headers=headers)
 
     @tag("list")
     @task
@@ -24,4 +25,4 @@ class MyUser(HttpUser):
         headers = {
             "Content-Type": "application/json"
         }
-        self.client.get("/orders", params=params, headers=headers)
+        self.client.get("/customers", params=params, headers=headers)

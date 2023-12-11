@@ -3,6 +3,7 @@ package com.example
 import com.example.adapter.exposed.CustomersRepository
 import com.example.adapter.exposed.ProductsRepository
 import com.example.adapter.exposed.config.configureDatabase
+import com.example.adapter.ktor.plugins.HttpServerConfig
 import com.example.adapter.ktor.plugins.configureHttpClient
 import com.example.adapter.ktor.plugins.configureHttpServer
 import com.example.adapter.ktor.plugins.fetchProducts
@@ -11,26 +12,39 @@ import io.ktor.server.config.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.launch
 
+val dbPool: String = System.getenv("USE_DB_POOL") ?: "true"
+val caching: String = System.getenv("USE_CACHING") ?: "true"
+val etags: String = System.getenv("USE_ETAGS") ?: "true"
 val databaseConfig = ApplicationConfig("database.conf")
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @Suppress("unused")
 fun Application.execute() {
-    configureDatabase(databaseConfig)
+    configureDatabase(databaseConfig, dbPool == "true")
+    setupHttpServer(this)
+    setupHttpClient(this)
+}
 
+private fun setupHttpServer(application: Application) {
     val productsRepository = ProductsRepository()
     val customersRepository = CustomersRepository()
 
-    configureHttpServer(
+    val httpServerConfig = HttpServerConfig(
         productsRepository = productsRepository,
-        customersRepository = customersRepository
+        customersRepository = customersRepository,
+        useCache = caching == "true",
+        useETags = etags == "true"
     )
-    val client = configureHttpClient()
 
-    launch {
-        val products = fetchProducts(client).invoke()
+    application.configureHttpServer(httpServerConfig)
+}
+
+private fun setupHttpClient(application: Application) {
+    val client = application.configureHttpClient()
+
+    application.launch {
+        val products = application.fetchProducts(client).invoke()
         println("Products: $products")
     }
 }
-
