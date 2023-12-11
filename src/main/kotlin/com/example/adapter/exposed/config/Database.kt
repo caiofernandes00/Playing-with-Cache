@@ -1,6 +1,6 @@
-package adapter.exposed.config
+package com.example.adapter.exposed.config
 
-import adapter.ktor.extensions.toMap
+import com.example.adapter.ktor.extensions.toMap
 import com.zaxxer.hikari.HikariDataSource
 import io.ktor.server.config.*
 import org.jetbrains.exposed.sql.Database
@@ -20,7 +20,7 @@ private fun hikariConfig(dbProps: Properties): HikariDataSource {
         driverClassName = dbProps.getProperty("driver")
         password = dbProps.getProperty("password")
         maximumPoolSize = dbProps.getProperty("maximumPoolSize").toInt()
-        isAutoCommit = dbProps.getProperty("isAutoCommit").toBoolean() ?: false
+        isAutoCommit = dbProps.getProperty("isAutoCommit").toBoolean()
         transactionIsolation = dbProps.getProperty("transactionIsolation")
     }
 }

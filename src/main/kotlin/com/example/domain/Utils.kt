@@ -1,4 +1,4 @@
-package domain
+package com.example.domain
 
 fun generateETag(data: Any): String {
     val bytes = java.security.MessageDigest.getInstance("MD5").digest(data.toString().toByteArray())

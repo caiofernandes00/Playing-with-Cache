@@ -1,8 +1,8 @@
-package adapter.ktor.plugins
+package com.example.adapter.ktor.plugins
 
-import adapter.exposed.CustomersRepository
-import adapter.exposed.ProductsRepository
-import domain.generateETag
+import com.example.adapter.exposed.CustomersRepository
+import com.example.adapter.exposed.ProductsRepository
+import com.example.domain.generateETag
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*

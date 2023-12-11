@@ -1,4 +1,4 @@
-package adapter.exposed
+package com.example.adapter.exposed
 
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table

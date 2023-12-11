@@ -1,7 +1,7 @@
-package adapter.ktor.plugins
+package com.example.adapter.ktor.plugins
 
-import domain.CustomerDomain
-import domain.ProductDomain
+import com.example.domain.CustomerDomain
+import com.example.domain.ProductDomain
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*

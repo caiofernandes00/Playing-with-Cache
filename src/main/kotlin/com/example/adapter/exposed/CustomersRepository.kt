@@ -1,6 +1,6 @@
-package adapter.exposed
+package com.example.adapter.exposed
 
-import domain.CustomerDomain
+import com.example.domain.CustomerDomain
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
@@ -19,10 +19,10 @@ class CustomersRepository() : BaseRepository() {
     override val table: Table
         get() = CustomersTable
 
-    suspend fun create(customerTable: CustomersTable): String = query {
+    suspend fun create(customerDomain: CustomerDomain): String = query {
         CustomersTable.insert {
-            it[id] = UUID.randomUUID().toString()
-            it[name] = customerTable.name
+            it[id] = customerDomain.id.toString()
+            it[name] = name
         }[CustomersTable.id]
     }
 

@@ -1,6 +1,6 @@
-package adapter.exposed
+package com.example.adapter.exposed
 
-import domain.ProductDomain
+import com.example.domain.ProductDomain
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select

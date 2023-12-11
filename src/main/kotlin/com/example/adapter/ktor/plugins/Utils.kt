@@ -1,4 +1,4 @@
-package adapter.ktor.plugins
+package com.example.adapter.ktor.plugins
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

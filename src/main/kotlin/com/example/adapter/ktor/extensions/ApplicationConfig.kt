@@ -1,4 +1,4 @@
-package adapter.ktor.extensions
+package com.example.adapter.ktor.extensions
 
 import io.ktor.server.config.*
 
