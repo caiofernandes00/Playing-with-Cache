@@ -9,7 +9,7 @@ import java.util.*
 
 class ProductsRepository() : BaseRepository() {
     object ProductsTable : Table() {
-        val id = varchar("id", 36).autoIncrement()
+        val id = integer("id").autoIncrement()
         val name = varchar("name", 255)
         val price = double("age")
 
@@ -19,9 +19,9 @@ class ProductsRepository() : BaseRepository() {
     override val table: Table
         get() = ProductsTable
 
-    suspend fun create(productDomain: ProductDomain): String = query {
+    suspend fun create(productDomain: ProductDomain): Int = query {
         ProductsTable.insert {
-            it[id] = UUID.randomUUID().toString()
+            it[id] = productDomain.id
             it[name] = productDomain.name
         }[ProductsTable.id]
     }
@@ -36,7 +36,7 @@ class ProductsRepository() : BaseRepository() {
         }
     }
 
-    suspend fun getById(id: String): ProductDomain? = query {
+    suspend fun getById(id: Int): ProductDomain? = query {
         ProductsTable.select {
             ProductsTable.id eq id
         }.map {

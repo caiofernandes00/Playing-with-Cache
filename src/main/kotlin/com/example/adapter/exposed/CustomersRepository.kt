@@ -9,7 +9,7 @@ import java.util.*
 
 class CustomersRepository() : BaseRepository() {
     object CustomersTable : Table() {
-        val id = varchar("id", 36).autoIncrement()
+        val id = integer("id").autoIncrement()
         val name = varchar("name", 255)
         val age = integer("age")
 
@@ -19,9 +19,9 @@ class CustomersRepository() : BaseRepository() {
     override val table: Table
         get() = CustomersTable
 
-    suspend fun create(customerDomain: CustomerDomain): String = query {
+    suspend fun create(customerDomain: CustomerDomain): Int = query {
         CustomersTable.insert {
-            it[id] = customerDomain.id.toString()
+            it[id] = customerDomain.id
             it[name] = name
         }[CustomersTable.id]
     }
@@ -36,7 +36,7 @@ class CustomersRepository() : BaseRepository() {
         }
     }
 
-    suspend fun getById(id: String): CustomerDomain? = query {
+    suspend fun getById(id: Int): CustomerDomain? = query {
         CustomersTable.select {
             CustomersTable.id eq id
         }.map {
