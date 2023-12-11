@@ -3,10 +3,10 @@ package domain
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Customer(
+data class ProductDomain(
     val id: Int,
     val name: String,
-    val age: Int
+    val price: Double
 ) {
     fun generateETag(): String = generateETag(this)
 }

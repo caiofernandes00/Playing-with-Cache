@@ -1,7 +1,7 @@
 package adapter.ktor.plugins
 
-import domain.Customer
-import domain.Product
+import adapter.exposed.CustomersRepository
+import adapter.exposed.ProductsRepository
 import domain.generateETag
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
@@ -11,18 +11,17 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
-fun Application.configureHttpServer() {
+fun Application.configureHttpServer(
+    productsRepository: ProductsRepository,
+    customersRepository: CustomersRepository
+) {
     install(ContentNegotiation) {
         json()
     }
     routing {
         get("/products") {
             call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
-            val products = listOf(
-                Product(1, "Product 1", 100.0),
-                Product(2, "Product 2", 200.0),
-                Product(3, "Product 3", 300.0),
-            )
+            val products = productsRepository.list()
 
             val eTag = generateETag(products)
             val requestETag = call.request.header(HttpHeaders.IfNoneMatch)
@@ -36,19 +35,15 @@ fun Application.configureHttpServer() {
 
         get("/customers") {
             call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
-            val products = listOf(
-                Customer(1, "Customer 1", 10),
-                Customer(2, "Customer 2", 20),
-                Customer(3, "Customer 3", 30),
-            )
+            val customers = customersRepository.list()
 
-            val eTag = generateETag(products)
+            val eTag = generateETag(customers)
             val requestETag = call.request.header(HttpHeaders.IfNoneMatch)
             if (requestETag == eTag) {
                 call.respond(HttpStatusCode.NotModified)
             } else {
                 call.response.headers.append(HttpHeaders.ETag, eTag)
-                call.respond(products)
+                call.respond(customers)
             }
         }
     }

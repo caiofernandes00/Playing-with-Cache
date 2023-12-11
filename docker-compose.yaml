@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:6-alpine
+    container_name: playing-with-cache-redis
+    command: redis-server --requirepass redis
+    restart: always
+    ports:
+      - "6379:6379"
+    environment:
+      REDIS_PASSWORD: redis
+
+  postgresql:
+    image: postgres:16-alpine
+    container_name: playing-with-cache-postgresql
+    command: -c 'max_connections=1000'
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: perf_db
