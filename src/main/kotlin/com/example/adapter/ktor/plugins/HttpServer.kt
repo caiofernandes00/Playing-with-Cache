@@ -29,7 +29,7 @@ fun Application.configureHttpServer(
 
     routing {
         get("/products") {
-            call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
+            call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
             val products = if (httpServerConfig.useCache){
                 httpServerConfig.productsRepository.list(getFilters())
             } else {
@@ -44,6 +44,7 @@ fun Application.configureHttpServer(
         }
 
         get("/products/{id}") {
+            call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest)
@@ -79,6 +80,7 @@ fun Application.configureHttpServer(
         }
 
         get("/customers/{id}") {
+            call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
             val id = call.parameters["id"]?.toIntOrNull()
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest)
