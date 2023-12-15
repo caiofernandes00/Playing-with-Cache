@@ -6,15 +6,11 @@ import io.ktor.server.config.*
 import org.jetbrains.exposed.sql.Database
 import java.util.*
 
-fun configureDatabase(config: ApplicationConfig, dbPool: Boolean = true): Database {
+fun configureDatabase(config: ApplicationConfig): Database {
     val dbProps = getDbProperties(config)
     val hikari = hikariConfig(dbProps)
 
-    return if (dbPool) {
-        Database.connect(hikari)
-    } else {
-        databaseConfigNoPool(dbProps)
-    }
+    return Database.connect(hikari)
 }
 
 private fun hikariConfig(dbProps: Properties): HikariDataSource {
@@ -27,15 +23,6 @@ private fun hikariConfig(dbProps: Properties): HikariDataSource {
         isAutoCommit = dbProps.getProperty("isAutoCommit").toBoolean()
         transactionIsolation = dbProps.getProperty("transactionIsolation")
     }
-}
-
-private fun databaseConfigNoPool(dbProps: Properties): Database {
-    return Database.connect(
-        url = dbProps.getProperty("url"),
-        driver = dbProps.getProperty("driver"),
-        user = dbProps.getProperty("user"),
-        password = dbProps.getProperty("password")
-    )
 }
 
 private fun getDbProperties(config: ApplicationConfig) =

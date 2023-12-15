@@ -30,7 +30,11 @@ fun Application.configureHttpServer(
     routing {
         get("/products") {
             call.response.headers.append(HttpHeaders.CacheControl, "no-cache")
-            val products = httpServerConfig.productsRepository.list(getFilters())
+            val products = if (httpServerConfig.useCache){
+                httpServerConfig.productsRepository.list(getFilters())
+            } else {
+                httpServerConfig.productsRepository.list(getFilters())
+            }
 
             if (httpServerConfig.useETags) {
                 useEtags(products)
@@ -45,9 +49,9 @@ fun Application.configureHttpServer(
                 call.respond(HttpStatusCode.BadRequest)
             } else {
                 val product = if (httpServerConfig.useCache) {
-                    val product = httpServerConfig.productsRepository.getById(id)
+                    httpServerConfig.productsRepository.getById(id)
                 } else {
-                    val product = httpServerConfig.productsRepository.getById(id)
+                    httpServerConfig.productsRepository.getById(id)
                 }
                 prepareGetByIdResponse(product)
             }
@@ -61,7 +65,11 @@ fun Application.configureHttpServer(
 
         get("/customers") {
             call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
-            val customers = httpServerConfig.customersRepository.list(getFilters())
+            val customers = if (httpServerConfig.useCache) {
+                httpServerConfig.customersRepository.list(getFilters())
+            } else {
+                httpServerConfig.customersRepository.list(getFilters())
+            }
 
             if (httpServerConfig.useETags) {
                 useEtags(customers)
@@ -76,9 +84,9 @@ fun Application.configureHttpServer(
                 call.respond(HttpStatusCode.BadRequest)
             } else {
                 val customer = if (httpServerConfig.useCache) {
-                    val customer = httpServerConfig.customersRepository.getById(id)
+                    httpServerConfig.customersRepository.getById(id)
                 } else {
-                    val customer = httpServerConfig.customersRepository.getById(id)
+                    httpServerConfig.customersRepository.getById(id)
                 }
                 prepareGetByIdResponse(customer)
             }

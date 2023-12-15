@@ -1,7 +1,11 @@
 from locust import HttpUser, task, between, constant, tag
+import os
+
+use_chace = os.getenv("CLIENT_USE_CACHE", "false").lower() == "true"
 
 class Product(HttpUser):
     wait_time = between(0.1, 1)
+    _etag = None
 
     @tag("create")
     @task
@@ -14,15 +18,17 @@ class Product(HttpUser):
             "price": 10,
         }
 
-        response = self.client.post("/products", json=payload, headers=headers)
+        self.client.post("/products", json=payload, headers=headers)
 
     @tag("list")
     @task
     def get_all(self):
-        wait_time = between(1, 3)
-
         params = {"page": 0, "perPage": 10}
         headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "If-None-Match": self._etag
         }
-        self.client.get("/products", params=params, headers=headers)
+
+        response = self.client.get("/products", params=params, headers=headers)
+        self._etag = response.headers.get('ETag', None) 
+

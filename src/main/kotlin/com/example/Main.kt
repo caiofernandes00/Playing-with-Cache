@@ -12,16 +12,15 @@ import io.ktor.server.config.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.launch
 
-val dbPool: String = System.getenv("USE_DB_POOL") ?: "true"
-val caching: String = System.getenv("USE_CACHING") ?: "true"
-val etags: String = System.getenv("USE_ETAGS") ?: "true"
+val caching: String = System.getenv("SERVER_USE_CACHING") ?: "true"
+val etags: String = System.getenv("SERVER_USE_ETAGS") ?: "true"
 val databaseConfig = ApplicationConfig("database.conf")
 
 fun main(args: Array<String>): Unit = EngineMain.main(args)
 
 @Suppress("unused")
 fun Application.execute() {
-    configureDatabase(databaseConfig, dbPool == "true")
+    configureDatabase(databaseConfig)
     setupHttpServer(this)
     setupHttpClient(this)
 }
