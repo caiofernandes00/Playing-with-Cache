@@ -39,7 +39,6 @@ class Product(HttpUser):
         }
     
         if helper.should_retrieve_from_cache(use_chace, self._no_cache, self._max_age, self._response, self._last_time_fetched):
-            print("Retrieved from cache")
             return
 
         response = self.client.get("/products", params=params, headers=headers)
