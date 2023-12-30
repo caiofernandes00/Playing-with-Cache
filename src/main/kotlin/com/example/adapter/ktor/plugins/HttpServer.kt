@@ -2,7 +2,11 @@ package com.example.adapter.ktor.plugins
 
 import com.example.adapter.exposed.CustomersRepository
 import com.example.adapter.exposed.ProductsRepository
-import com.example.domain.*
+import com.example.domain.CustomerCreationDomain
+import com.example.domain.PaginationFilters
+import com.example.domain.ProductCreationDomain
+import com.example.domain.generateETag
+import io.github.crackthecodeabhi.kreds.connection.KredsClient
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -11,14 +15,16 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.pipeline.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 data class HttpServerConfig(
     val productsRepository: ProductsRepository,
     val customersRepository: CustomersRepository,
+    val cacheClient: KredsClient,
     val useCache: Boolean = true,
     val useETags: Boolean = true
 )
-
 
 fun Application.configureHttpServer(
     httpServerConfig: HttpServerConfig
@@ -30,16 +36,16 @@ fun Application.configureHttpServer(
     routing {
         get("/products") {
             call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
-            val products = if (httpServerConfig.useCache){
-                httpServerConfig.productsRepository.list(getFilters())
-            } else {
+            val filters = getFilters()
+            val key = "products-${filters.page}-${filters.perPage}"
+            val products = useFromCacheIfExists(httpServerConfig, key) {
                 httpServerConfig.productsRepository.list(getFilters())
             }
 
             if (httpServerConfig.useETags) {
                 useEtags(products)
             } else {
-                call.respond(products)
+                respondAndSetCache(httpServerConfig, key, products)
             }
         }
 
@@ -49,12 +55,11 @@ fun Application.configureHttpServer(
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest)
             } else {
-                val product = if (httpServerConfig.useCache) {
-                    httpServerConfig.productsRepository.getById(id)
-                } else {
+                val product = useFromCacheIfExists(httpServerConfig, "product-$id") {
                     httpServerConfig.productsRepository.getById(id)
                 }
-                prepareGetByIdResponse(product)
+
+                prepareGetByIdResponse(httpServerConfig, product)
             }
         }
 
@@ -66,16 +71,16 @@ fun Application.configureHttpServer(
 
         get("/customers") {
             call.response.headers.append(HttpHeaders.CacheControl, "must-revalidate,max-age=60,public")
-            val customers = if (httpServerConfig.useCache) {
-                httpServerConfig.customersRepository.list(getFilters())
-            } else {
+            val filters = getFilters()
+            val key = "customers-${filters.page}-${filters.perPage}"
+            val customers = useFromCacheIfExists(httpServerConfig, key) {
                 httpServerConfig.customersRepository.list(getFilters())
             }
 
             if (httpServerConfig.useETags) {
                 useEtags(customers)
             } else {
-                call.respond(customers)
+                respondAndSetCache(httpServerConfig, key, customers)
             }
         }
 
@@ -85,12 +90,11 @@ fun Application.configureHttpServer(
             if (id == null) {
                 call.respond(HttpStatusCode.BadRequest)
             } else {
-                val customer = if (httpServerConfig.useCache) {
-                    httpServerConfig.customersRepository.getById(id)
-                } else {
-                    httpServerConfig.customersRepository.getById(id)
+                val customer = useFromCacheIfExists(httpServerConfig, "customer-$id") {
+                    httpServerConfig.productsRepository.getById(id)
                 }
-                prepareGetByIdResponse(customer)
+
+                prepareGetByIdResponse(httpServerConfig, customer)
             }
         }
 
@@ -103,12 +107,13 @@ fun Application.configureHttpServer(
 }
 
 private suspend fun PipelineContext<Unit, ApplicationCall>.prepareGetByIdResponse(
+    httpServerConfig: HttpServerConfig,
     payload: Any?
 ) {
     if (payload == null) {
         call.respond(HttpStatusCode.NotFound)
     } else {
-        call.respond(payload)
+        respondAndSetCache(httpServerConfig, "products", payload)
     }
 }
 
@@ -125,8 +130,29 @@ private suspend fun PipelineContext<Unit, ApplicationCall>.useEtags(
     }
 }
 
+private suspend fun <T> PipelineContext<Unit, ApplicationCall>.useFromCacheIfExists(
+    httpServerConfig: HttpServerConfig,
+    key: String,
+    fn: suspend () -> T
+): T =
+    if (httpServerConfig.useCache) httpServerConfig.cacheClient.get("products") as T ?: fn() else fn()
+
+
+private suspend inline fun <reified T : Any> PipelineContext<Unit, ApplicationCall>.respondAndSetCache(
+    httpServerConfig: HttpServerConfig,
+    key: String,
+    value: T,
+) {
+    httpServerConfig.cacheClient.set(key, json.encodeToString(value))
+    call.respond(value)
+}
+
 private fun PipelineContext<Unit, ApplicationCall>.getFilters(): PaginationFilters {
     val perPage = call.request.queryParameters["perPage"]?.toIntOrNull() ?: 10
     val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
     return PaginationFilters(perPage, page.toLong())
+}
+
+private val json = Json {
+    ignoreUnknownKeys = true
 }

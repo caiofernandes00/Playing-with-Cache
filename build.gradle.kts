@@ -7,6 +7,7 @@ val h2_version: String by project
 val postgres_version: String by project
 val exposed_version: String by project
 val hikari_version: String by project
+val kreds_version: String by project
 
 plugins {
     kotlin("jvm") version "1.9.0"
@@ -32,6 +33,7 @@ dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0-RC2")
     // Log
     implementation("ch.qos.logback:logback-classic:$logback_version")
     // Ktor
@@ -52,6 +54,8 @@ dependencies {
     implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
     implementation("org.jetbrains.exposed:exposed-java-time:$exposed_version")
     implementation("com.zaxxer:HikariCP:$hikari_version")
+    // Cache
+    implementation("io.github.crackthecodeabhi:kreds:$kreds_version")
     // Testing
     testImplementation("io.ktor:ktor-server-tests:$ktor_version")
     testImplementation(kotlin("test"))
