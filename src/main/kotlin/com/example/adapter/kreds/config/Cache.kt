@@ -14,12 +14,12 @@ fun configureCache(config: ApplicationConfig): KredsClient {
     val cacheProps = getCacheProperties(config)
     return runBlocking{
         withContext(Dispatchers.IO) {
-            newClient(Endpoint.from(cacheProps.getProperty("host")))
+            newClient(Endpoint.from(cacheProps.getProperty("endpoint")))
         }
     }
 }
 
 private fun getCacheProperties(config: ApplicationConfig) =
     Properties().apply {
-        putAll(config.toMap("kreds.cache"))
+        putAll(config.toMap("kreds.redis"))
     }
